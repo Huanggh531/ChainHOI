@@ -1,0 +1,29 @@
+defaults:
+    - default
+    - text_encoder: clip
+    - gcn_denoiser: chainhoi
+    - optimizer: adamw
+    - noise_scheduler: DDPM
+    - sample_scheduler: DDIM
+#    - lr_scheduler: None
+
+_target_: src.models.chainhoi_behave.CHAINHOI
+
+text_replace_prob: 0.2
+guidance_scale: 3
+dataset_name: ${data.dataset_name}
+
+evaluator:
+  T2M_dir: ./dataset
+
+ocpm: false
+compile: false
+ckpt_path: ${paths.output_dir}/checkpoints
+save_every_n_epochs: 1e9
+
+generate: False
+obj_flag: False
+latent_dim: 256
+dis_alpha: 2.0
+obj_alpha: 1.0
+ddimstep: 50

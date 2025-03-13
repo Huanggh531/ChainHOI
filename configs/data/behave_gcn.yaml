@@ -1,0 +1,24 @@
+_target_: src.data.behave_gcn.BehaveGCNDataModule
+
+data_dir: ${paths.data_dir}
+batch_size: 128
+val_batch_size: 32
+test_batch_size: 32
+num_workers: 4
+pin_memory: False
+max_motion_length: 196
+min_motion_length: 40
+max_text_len: 20
+unit_length: 4
+motion_dim: 269
+joint_format: behave_joint_5
+w_vectorizer_path: ${paths.root_dir}/glove
+dataset_name: behave_t2m
+data_root: dataset/behave_t2m
+wo_obj_motion: False
+use_global: False
+repeat_dataset: 20
+# keyframe_info:
+#   type: random
+#   file: val_test_keyframes.txt
+#   num: 4

@@ -1,0 +1,14 @@
+_target_: src.models.nets.kfg.KFG1
+motion_dim: ${data.motion_dim}
+model_dim: 512
+num_keyframes: 6
+text_feat_dim: 512
+num_heads: 8
+dim_feedforward: 2048
+dropout: 0.1
+num_layers: 8
+arch: 1
+head_type: 2
+head_drop: 0
+text_type: 1
+pose_only: true

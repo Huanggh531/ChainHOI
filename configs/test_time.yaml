@@ -1,0 +1,27 @@
+# @package _global_
+
+defaults:
+  - _self_
+  - data: mnist # choose datamodule with `test_dataloader()` for evaluation
+  - model: mnist
+  - logger: null
+  - trainer: gpu
+  - paths: default
+  - extras: default
+  - hydra: default
+
+task_name: "eval"
+
+tags: ["dev"]
+
+# passing checkpoint path is necessary for evaluation
+
+ckpt_path: "/home/guohong/HOI/logs/gcn/runs/id005_2024-11-01_00-10-46/epoch=063.ckpt"
+
+#"/home/guohong/HOI/logs/gcn/runs/2024-07-25_12-23-51/checkpoints/epoch=198.ckpt"
+#/home/guohong/HOI/logs/gcn/runs/2024-07-25_12-25-38/checkpoints/epoch=189.ckpt
+
+#/home/guohong/HOI/logs/gcn/runs/2024-07-26_13-53-59/checkpoints/epoch=120.ckpt
+#/home/guohong/HOI/logs/gcn/runs/2024-07-25_12-29-06/checkpoints/epoch=121.ckpt
+# seed for random number generators in pytorch, numpy and python.random
+seed: null
