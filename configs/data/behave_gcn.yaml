@@ -1,4 +1,4 @@
-_target_: src.data.behave_gcn.BehaveGCNDataModule
+_target_: src.data.behave_omomo.BehaveGCNDataModule
 
 data_dir: ${paths.data_dir}
 batch_size: 128
@@ -10,12 +10,10 @@ max_motion_length: 196
 min_motion_length: 40
 max_text_len: 20
 unit_length: 4
-motion_dim: 269
 joint_format: behave_joint_5
 w_vectorizer_path: ${paths.root_dir}/glove
 dataset_name: behave_t2m
 data_root: dataset/behave_t2m
-wo_obj_motion: False
 use_global: False
 repeat_dataset: 20
 # keyframe_info:

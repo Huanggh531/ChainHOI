@@ -1,13 +1,13 @@
 defaults:
     - default
     - text_encoder: clip
-    - gcn_denoiser: gcn5
+    - gcn_denoiser: chainhoi
     - optimizer: adamw
     - noise_scheduler: DDPM
     - sample_scheduler: DDIM
 #    - lr_scheduler: None
 
-_target_: src.models.gcn7_v2_omomo.GCN
+_target_: src.models.chainhoi_omomo.CHAINHOI
 
 text_replace_prob: 0.2
 guidance_scale: 3

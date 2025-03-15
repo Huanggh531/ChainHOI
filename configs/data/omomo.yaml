@@ -1,4 +1,4 @@
-_target_: src.data.behave_gcn.OmomoDataModule
+_target_: src.data.behave_omomo.OmomoDataModule
 
 data_dir: ${paths.data_dir}
 batch_size: 128
@@ -11,12 +11,10 @@ min_motion_length: 40
 max_text_len: 20
 unit_length: 4
 njoints: 22
-motion_dim: 269
 joint_format: behave_joint_2
 w_vectorizer_path: ${paths.root_dir}/glove
-dataset_name: behave_t2m
-data_root: data/Behave
-wo_obj_motion: False
+dataset_name: omomo
+data_root: dataset/omomo
 use_global: False
 repeat_dataset: 5
 # keyframe_info:
