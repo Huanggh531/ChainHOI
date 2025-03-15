@@ -38,21 +38,24 @@ class BehaveGCNDataModule(LightningDataModule):
         min_motion_length: int = 40,
         max_text_len: int = 20,
         unit_length: int = 4,
-        motion_dim: int = 269,
         w_vectorizer_path: str = 'glove',
         dataset_name: str = 'hml3d',
         data_root:str = 'dataset/behave_t2m',
-        wo_obj_motion:bool=False,
         use_global:bool=False,
         joint_format:str='',
         repeat_dataset:int=1
     ):
         super().__init__()
-        
+        self.batch_size=batch_size
+        self.val_batch_size=val_batch_size
+        self.test_batch_size=test_batch_size
+        self.max_motion_length=max_motion_length
+        self.min_motion_length=min_motion_length
+        self.max_text_len=max_text_len
+        self.unit_length=unit_length
         self.save_hyperparameters(logger=False)
         # Configurations of T2M dataset and KIT dataset is almost the same
         device = None  # torch.device('cuda:4') # This param is not in use in this context
-        self.data_dir=data_root
         print('Loading dataset %s ...' % dataset_name)
         self.w_vectorizer = WordVectorizer(w_vectorizer_path, 'our_vab')#"WordVectorizer"可能是指用于将文本数据转换为向量表示
         #self.dataset = Text2MotionDatasetV2(self.opt, self.mean, self.std, self.split_file, self.w_vectorizer)
@@ -75,15 +78,15 @@ class BehaveGCNDataModule(LightningDataModule):
     def setup(self,stage:None):
         #self.hparams.keyframe_info.file = osp.join(self.data_dir, self.hparams.keyframe_info.file)
         self.dataset_kwargs = {
-            "mean": np.load(osp.join(self.data_dir, "Mean_local.npy")),
-            "std": np.load(osp.join(self.data_dir, "Std_local.npy")),
+            "mean": np.load(osp.join(self.data_root, "Mean_local.npy")),
+            "std": np.load(osp.join(self.data_root, "Std_local.npy")),
             "w_vectorizer": self.w_vectorizer,
-            "max_motion_length": self.hparams.max_motion_length,
-            "min_motion_length": self.hparams.min_motion_length,
-            "max_text_len": self.hparams.max_text_len,
-            "unit_length": self.hparams.unit_length,
-            "motion_dir": osp.join(self.data_dir, "new_joint_vecs_local"),
-            "text_dir": osp.join(self.data_dir, "texts"),
+            "max_motion_length": self.max_motion_length,
+            "min_motion_length": self.min_motion_length,
+            "max_text_len": self.max_text_len,
+            "unit_length": self.unit_length,
+            "motion_dir": osp.join(self.data_root, "new_joint_vecs_local"),
+            "text_dir": osp.join(self.data_root, "texts"),
             "data_root":self.data_root,
             "use_global":self.use_global,
             "joint_format":self.joint_format,
@@ -93,20 +96,20 @@ class BehaveGCNDataModule(LightningDataModule):
     def train_dataloader(self):
         
         if self.train_dataset is None:
-            self.train_dataset = self.dataset(split_file=osp.join(self.data_dir, "train.txt"),mode="train",
+            self.train_dataset = self.dataset(split_file=osp.join(self.data_root, "train.txt"),mode="train",
                                                       repeat_dataset=self.repeat_dataset,**self.dataset_kwargs)
             #self.nfeats = self.train_dataset.nfeats
         options = self.dataloader_options.copy()
-        options["batch_size"] = self.hparams.batch_size
+        options["batch_size"] = self.batch_size
         return DataLoader(dataset=self.train_dataset, shuffle=True, **options)
 
     def val_dataloader(self):
         
         if self.val_dataset is None:
-            self.val_dataset = self.dataset(split_file=osp.join(self.data_dir, "test.txt"),mode="test",
+            self.val_dataset = self.dataset(split_file=osp.join(self.data_root, "test.txt"),mode="test",
                                                             **self.dataset_kwargs)
         options = self.dataloader_options.copy()
-        options["batch_size"] = self.hparams.val_batch_size
+        options["batch_size"] = self.val_batch_size
         # if options["batch_size"] == -1:
         #     options["batch_size"] = self.hparams.batch_size
         return DataLoader(dataset=self.val_dataset, shuffle=False, drop_last=False, **options)
@@ -114,20 +117,20 @@ class BehaveGCNDataModule(LightningDataModule):
     def test_dataloader(self):
         
         if self.test_dataset is None:
-            self.test_dataset = self.dataset(split_file=osp.join(self.data_dir, "test.txt"),mode="test",
+            self.test_dataset = self.dataset(split_file=osp.join(self.data_root, "test.txt"),mode="test",
                                                      **self.dataset_kwargs)
             #self.nfeats = self.test_dataset.nfeats
             #self.test_dataset.is_mm = False
 
         options = self.dataloader_options.copy()
-        options["batch_size"] = self.hparams.test_batch_size
+        options["batch_size"] = self.test_batch_size
 
         return DataLoader(dataset=self.test_dataset, shuffle=False, drop_last=False, **options)
     
     def test_dataloader2(self):
         
         if self.test_dataset is None:
-            self.test_dataset = self.dataset(split_file=osp.join(self.data_dir, "test_time.txt"),mode="test",
+            self.test_dataset = self.dataset(split_file=osp.join(self.data_root, "test_time.txt"),mode="test",
                                                      **self.dataset_kwargs)
             #self.nfeats = self.test_dataset.nfeats
             #self.test_dataset.is_mm = False
@@ -166,21 +169,24 @@ class OmomoDataModule(LightningDataModule):
         max_text_len: int = 20,
         unit_length: int = 4,
         njoints: int = 22,
-        motion_dim: int = 269,
         w_vectorizer_path: str = 'glove',
         dataset_name: str = 'hml3d',
-        data_root:str = '/home/guohong/omomo/data',
-        wo_obj_motion:bool=False,
+        data_root:str = 'dataset/omomo',
         use_global:bool=False,
         joint_format:str='',
         repeat_dataset:int=1
     ):
         super().__init__()
-        
+        self.batch_size=batch_size
+        self.val_batch_size=val_batch_size
+        self.test_batch_size=test_batch_size
+        self.max_motion_length=max_motion_length
+        self.min_motion_length=min_motion_length
+        self.max_text_len=max_text_len
+        self.unit_length=unit_length
         self.save_hyperparameters(logger=False)
         # Configurations of T2M dataset and KIT dataset is almost the same
         device = None  # torch.device('cuda:4') # This param is not in use in this context
-        self.data_dir="/home/guohong/omomo/dataset/omomo_t2m_final_nofacez"
         print('Loading dataset %s ...' % dataset_name)
         self.w_vectorizer = WordVectorizer(w_vectorizer_path, 'our_vab')#"WordVectorizer"可能是指用于将文本数据转换为向量表示
         #self.dataset = Text2MotionDatasetV2(self.opt, self.mean, self.std, self.split_file, self.w_vectorizer)
@@ -205,15 +211,15 @@ class OmomoDataModule(LightningDataModule):
         #self.hparams.keyframe_info.file = osp.join(self.data_dir, self.hparams.keyframe_info.file)
 
         self.dataset_kwargs = {
-            "mean": np.load(osp.join(self.data_dir, "Mean_local.npy")),
-            "std": np.load(osp.join(self.data_dir, "Std_local.npy")),
+            "mean": np.load(osp.join(self.data_root, "Mean_local.npy")),
+            "std": np.load(osp.join(self.data_root, "Std_local.npy")),
             "w_vectorizer": self.w_vectorizer,
-            "max_motion_length": self.hparams.max_motion_length,
-            "min_motion_length": self.hparams.min_motion_length,
-            "max_text_len": self.hparams.max_text_len,
-            "unit_length": self.hparams.unit_length,
-            "motion_dir": osp.join(self.data_dir, "new_joint_vecs_local"),
-            "text_dir": osp.join("/home/guohong/omomo/dataset/omomo_t2m_final_nofacez", "texts"),
+            "max_motion_length": self.max_motion_length,
+            "min_motion_length": self.min_motion_length,
+            "max_text_len": self.max_text_len,
+            "unit_length": self.unit_length,
+            "motion_dir": osp.join(self.data_root, "new_joint_vecs_local"),
+            "text_dir": osp.join(self.data_root, "texts"),
             "njoints": self.njoints,
             "data_root":self.data_root,
             "use_global":self.use_global,
@@ -224,22 +230,22 @@ class OmomoDataModule(LightningDataModule):
     def train_dataloader(self):
         
         if self.train_dataset is None:
-            self.train_dataset = self.dataset(mode="train",split_file=osp.join(self.data_dir, "train.txt"),
+            self.train_dataset = self.dataset(mode="train",split_file=osp.join(self.data_root, "train.txt"),
                                                       repeat_dataset=self.repeat_dataset,**self.dataset_kwargs)
             
             #self.nfeats = self.train_dataset.nfeats
         
         options = self.dataloader_options.copy()
-        options["batch_size"] = self.hparams.batch_size
+        options["batch_size"] = self.batch_size
         return DataLoader(dataset=self.train_dataset, shuffle=True, **options)
 
     def val_dataloader(self):
         
         if self.val_dataset is None:
-            self.val_dataset = self.dataset(mode="test",split_file=osp.join(self.data_dir, "test.txt"),
+            self.val_dataset = self.dataset(mode="test",split_file=osp.join(self.data_root, "test.txt"),
                                                             **self.dataset_kwargs)
         options = self.dataloader_options.copy()
-        options["batch_size"] = self.hparams.val_batch_size
+        options["batch_size"] = self.val_batch_size
         # if options["batch_size"] == -1:
         #     options["batch_size"] = self.hparams.batch_size
         return DataLoader(dataset=self.val_dataset, shuffle=False, drop_last=False, **options)
@@ -247,13 +253,13 @@ class OmomoDataModule(LightningDataModule):
     def test_dataloader(self):
         
         if self.test_dataset is None:
-            self.test_dataset = self.dataset(mode="test",split_file=osp.join(self.data_dir, "test.txt"),
+            self.test_dataset = self.dataset(mode="test",split_file=osp.join(self.data_root, "test.txt"),
                                                      **self.dataset_kwargs)
             #self.nfeats = self.test_dataset.nfeats
             #self.test_dataset.is_mm = False
 
         options = self.dataloader_options.copy()
-        options["batch_size"] = self.hparams.test_batch_size
+        options["batch_size"] = self.test_batch_size
 
         return DataLoader(dataset=self.test_dataset, shuffle=False, drop_last=False, **options)
 

@@ -357,11 +357,11 @@ class Text2MotionOmomoDatasetV2_GCN(data.Dataset):
             for line in f.readlines():
                 id_list.append(line.strip())
 
-        tf = open("./dataset/omomo/text_split.json", "r")
+        tf = open(pjoin(self.data_root,"text_split.json"), "r")
         self.text_split=json.load(tf)
-        loaded_data = np.load("./dataset/omomo/name_gtmotion.npz", allow_pickle=True)
+        loaded_data = np.load(pjoin(self.data_root,"name_gtmotion.npz"), allow_pickle=True)
         self.name_gtmotion = {key: loaded_data[key] for key in loaded_data.files}
-        loaded_data2 = np.load("./dataset/omomo/name_contact_label.npz", allow_pickle=True)
+        loaded_data2 = np.load(pjoin(self.data_root,"name_contact_label.npz"), allow_pickle=True)
         self.name_contact_label = {key: loaded_data2[key] for key in loaded_data2.files}
         
 
@@ -370,17 +370,17 @@ class Text2MotionOmomoDatasetV2_GCN(data.Dataset):
         
         #对每个所有训练集，准备文本、物体的信息（单帧）、motion的信息（连续若干长度）
         
-        tf = open("./dataset/omomo_t2m_final_nofacez/obj_scale.json", "r")
+        tf = open(pjoin(self.data_root,"obj_scale.json"), "r")
         obj_scale_list = json.load(tf)
         for name in tqdm(id_list):
             try:
-                sixD=np.load(pjoin("./dataset/omomo_t2m_final_nofacez/6d", self.mode ,name+ '.npy'))
-                contact=np.load(pjoin("./dataset/omomo_t2m_final_nofacez/contact", self.mode ,name+ '.npy'))
+                sixD=np.load(pjoin(self.data_root,"6d", self.mode ,name+ '.npy'))
+                contact=np.load(pjoin(self.data_root,"contact", self.mode ,name+ '.npy'))
                 motion = np.load(pjoin(self.motion_dir, name + '.npy'))
                 # # load gt obj points----------------
                 obj_name = name.split('_')[1]
                 # load obj points----------------
-                obj_mesh_path = pjoin('/home/guohong/omomo/data/capture_objects_simplify', obj_name+"_cleaned_simplified.obj")
+                obj_mesh_path = pjoin(self.data_root,'capture_objects_simplify', obj_name+"_cleaned_simplified.obj")
                 mesh = trimesh.load_mesh(obj_mesh_path)
                 obj_scale=obj_scale_list[str(obj_name)]
                 obj_points = np.array(mesh.vertices)#（485,3）
