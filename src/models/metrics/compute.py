@@ -911,25 +911,10 @@ class ContactMetric2(Metric):
         self.add_state("contact_distance",
                        default=torch.tensor(0.),
                         dist_reduce_fx="sum")#评估有接触的接触距离
-        self.add_state("contact_distance2",
-                       default=torch.tensor(0.),
-                        dist_reduce_fx="sum")#评估有接触的接触距离
         self.add_state("contact_distance_compair_gt",
                        default=torch.tensor(0.),
                         dist_reduce_fx="sum")#评估有接触的接触距离
                         
-        self.add_state("pene_distance",
-                       default=torch.tensor(0.),
-                        dist_reduce_fx="sum")#穿模距离
-        self.add_state("pene_num_joints",
-                       default=torch.tensor(0.),
-                        dist_reduce_fx="sum")#穿模距离
-        self.add_state("pene_num_joints2",
-                       default=torch.tensor(0.),
-                        dist_reduce_fx="sum")#穿模距离
-        self.add_state("foot_skating_ratio",
-                       default=torch.tensor(0.),
-                        dist_reduce_fx="sum")#穿模距离
         self.add_state("skating_frames",
                        default=torch.tensor(0.),
                         dist_reduce_fx="sum")
@@ -937,7 +922,7 @@ class ContactMetric2(Metric):
                        default=torch.tensor(0.),
                         dist_reduce_fx="sum")
         
-        self.metrics = ["contact_distance","contact_distance_compair_gt","pene_distance","pene_num_joints","foot_skating_ratio","pene_num_joints2","contact_distance2","skating_frames","total_ground_contact_frames"]
+        self.metrics = ["contact_distance","contact_distance_compair_gt","skating_frames","total_ground_contact_frames"]
         self.add_state("count", default=torch.tensor(0), dist_reduce_fx="sum")
         self.add_state("count_acc", default=torch.tensor(0), dist_reduce_fx="sum")
         self.add_state("count_seq",
@@ -956,21 +941,11 @@ class ContactMetric2(Metric):
 
         concat_metrics["contact_distance_mean"] = self.contact_distance.mean()/ count_seq
         concat_metrics["contact_distance_compair_gt_mean"] = self.contact_distance_compair_gt.mean()/ count_seq
-        concat_metrics["pene_distance_mean"] = self.pene_distance.mean()/ count_seq
-        concat_metrics["pene_num_joints_mean"] = self.pene_num_joints.mean()/ count_seq
-        concat_metrics["foot_skating_ratio_mean"] = self.foot_skating_ratio.mean()/ count_seq
-        concat_metrics["pene_num_joints2_mean"] = self.pene_num_joints2.mean()/ count_seq
-        concat_metrics["contact_distance2_mean"] = self.contact_distance2.mean()/ count_seq
-        concat_metrics["foot_skating_ratio_mean2"] = self.skating_frames/ self.total_ground_contact_frames
+        concat_metrics["foot_skating_ratio_mean"] = self.skating_frames/ self.total_ground_contact_frames
         concat_metrics.pop("skating_frames")
         concat_metrics.pop("total_ground_contact_frames")
         concat_metrics.pop("contact_distance")
         concat_metrics.pop("contact_distance_compair_gt")
-        concat_metrics.pop("pene_distance")
-        concat_metrics.pop("pene_num_joints")
-        concat_metrics.pop("foot_skating_ratio")
-        concat_metrics.pop("pene_num_joints2")
-        concat_metrics.pop("contact_distance2")
         return {**concat_metrics}
     def update(self,gt_pro: Tensor,lengths: List[int],human_positions: Tensor,obj_point: Tensor,faces: List[int],contact:Tensor,name=None,dataset=None,idx=None,cal_type=2):
         self.count += sum(lengths)
@@ -1011,10 +986,6 @@ class ContactMetric2(Metric):
             # 计算脚滑比率
             self.skating_frames += skating_frames
             self.total_ground_contact_frames += total_ground_contact_frames
-            if total_ground_contact_frames > 0:
-                foot_skating_ratio = skating_frames / total_ground_contact_frames
-                self.foot_skating_ratio += foot_skating_ratio
-
             
             len_=lengths[b]
             distances_ts=[]
@@ -1039,20 +1010,8 @@ class ContactMetric2(Metric):
             #contact_point=[0,10,11,12,16,17,20,21]
             #mse_loss=mse_loss[...,contact_point]
             
-            # 计算布尔张量，判断 distances 是否大于 contact
-            greater_than_contact = distances > contact_b
-            # 计算布尔张量，判断 distances 是否小于 contact
-            less_than_contact = distances < contact_b
 
-            # 只取第 20 和第 21 个关节点（即索引 19 和 20）的布尔值
-            selected_greater_than_contact = greater_than_contact[:, [20, 21]]
 
-            # 计算满足条件的数量 (True 转换为 1，False 转换为 0)
-            count_greater_than_contact = selected_greater_than_contact.sum()
-            self.contact_distance2 += count_greater_than_contact / selected_greater_than_contact.numel()
-            # 计算总数量
-            total_elements = less_than_contact.sum()
-            self.pene_num_joints2 += total_elements / less_than_contact.numel()
 
             
             #faces_expanded = faces[b].unsqueeze(0).unsqueeze(-1).expand(obj_point.shape[1], -1, -1, 3).cuda()  # [T, M, 3, 3]
@@ -1135,11 +1094,6 @@ class ContactMetric2(Metric):
                     if dis_min != 100000:
                         self.contact_distance_compair_gt += dis_min
 
-            # 计算小于零的值的平均值
-            sdf_loss = distances[:lengths[b]]
-            negative_values = sdf_loss[sdf_loss < 0]  # 获取小于零的值
-            self.pene_num_joints += negative_values.numel()/(sdf_loss.shape[0]*sdf_loss.shape[1])
-            self.pene_distance += (-1 * torch.mean(negative_values)) if negative_values.numel() > 0 else torch.tensor(0.0)  # 计算平均值
             
 from visualize.utils.rotation2xyz import Rotation2xyz
 from visualize.utils.simplify_loc2rot import joints2smpl

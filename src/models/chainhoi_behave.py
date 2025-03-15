@@ -436,7 +436,7 @@ class CHAINHOI(L.LightningModule):
             pred_gcn_motion = self.sample_scheduler.step(pred_noise, t, pred_gcn_motion).prev_sample.float() 
             # afford_sample = []
             # for b in range(pred_gcn_motion.shape[0]):
-            #     afford = np.load(os.path.join("/home/guohong/HOI-Diff/behave/guidance4",obj_name[b]+".npy"))
+            #     afford = np.load(os.path.join("dataset/behave_t2m/guidance",obj_name[b]+".npy"))
             #     afford = torch.tensor(afford,dtype=pred_gcn_motion.dtype).to(pred_gcn_motion.device)
             #     afford_sample.append(afford)
             # afford_sample = torch.stack(afford_sample)
